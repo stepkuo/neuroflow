@@ -1,0 +1,44 @@
+//* Question 1: How many users completed an exercise in their first month per monthly cohort? with 'users' table and 'exercises' table
+
+The bottom nested query joins the 'user' table and 'exercises' table by user_id so that we know the created_at date and user_id associated with each exercise.  
+
+The middle nested query creates a flag variable, commented details below:
+	month(a.created_at) as created_month, 
+	// extract month to determien the user's cohort month
+	case when (b.exercise_completion_date - a.created_at)/30 < 1 then 1 else 0 end as complete_flag 
+	// create a flag to bucket those who completed within one month (30 days) of 'created at' date, numbers greater than 1 mean that the difference was greater than 30 days
+
+The top nested query filters the table to users who have completed an excercise in their first month (30 days after sign up) and calculates the percentage of first month completions for each monthly cohort, commented details below:
+	sum(one_month_completions)/count(*) as month_completion_percent 
+	// add the users who have been flagged as completing an excercise in their month and divide by the number of distinct users in each cohort month
+	case when sum(complete_flag) > 0 then 1 else 0 end as one_month_completions 
+	// filter to users who have completed at least one exercise, create a new flag that only flags a user once if they completed more than one exercise in their first month 
+
+	group by created_month
+	//do all of the calculations on a month cohort basis
+
+Written to run within a proc sql step in SAS, slight adjustments may be needed for a MySQL environment
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*//
+
+
+create table first_month_percent as select distinct
+	created_month,
+	sum(one_month_completions)/count(*) as month_completion_percent
+	from (select distinct
+			user_id,
+			created_month,
+			case when sum(complete_flag) > 0 then 1 else 0 end as one_month_completions
+	from (select
+			a.user_id,
+			month(a.created_at) as created_month,
+			case when (b.exercise_completion_date - a.created_at)/30 < 1 then 1
+				else 0
+				end as complete_flag
+		  from users as a
+		  left join exercises as b
+		  on a.user_id = b.user_id)
+		  group by user_id,
+		  		   created_month)
+	group by created_month;	
+

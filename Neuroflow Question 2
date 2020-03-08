@@ -1,0 +1,36 @@
+//* Question 2 Which organizations have the most severe patient population? with 'Providers' table and 'Phq9' table
+Assume you have two tables in our company’s database: 
+● ‘Providers’ table that contains ‘provider_id’, ‘organization_id’, and ‘organization_name’ 
+● ‘Phq9’ table that contains ‘patient_id’,’provider_id’, ‘score’,’datetime_created’ 
+
+For context, A phq score ranges from 0-27 and anything 20 or above is considered severe. Write a single query that finds the top five organizations that have the highest average phq9 score per patient. 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Assumptions:
+	1. Assumes that 'organization_id' and 'organization_name' are a one-to-one mapping, such that grouping by either or both would yield the same results.  Code below preserves both in order to be able to report the top 5 organizations by both ID and name.
+	2. Assumes that the 'phq9' table is a point in time snapshot and therefore, patient_id is unique and that there is only one score per patient.
+	3. Does not account for any ties; assumes that the definition of top 5 organizations is limited to reporting 5 organizations.
+
+Description and Commenting of Code:
+The bottom nested query joins the 'phq9' table and 'provider' table by provider_id so that we know the organization_id and and the organization_name for each observation in the 'phq9' table.  
+
+The top query averages the phq score for each organization and creates a field that can later be used to rank the organizations. Averaging while grouping by organization_id and organization_name provides the average phq9 score per patient at each organization (assuming that patient_id and score are unique variables).
+
+The table is ordered by the average scorce in descending order and then limited to show the top 5 observations.  
+
+Possible Extensions:
+	1. Determine a criteria to break any ties (for example, the hospital with the higher number of unique patient_ids is ranked above a hospital with the same score with a lower number of patient_ids)
+	
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+create table top_five as select *,
+	avg(score) as avg_score
+	from (select a.*, b.* 
+	      from phq9 as a
+		  left join providers as b
+		  on a.provider_id = b.provider_id) 
+	group by organization_id, organization_name
+	order by desc avg_score, organization_id, organization_name
+	limit = 5;
