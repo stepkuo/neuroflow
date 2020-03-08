@@ -18,7 +18,7 @@ The top nested query filters the table to users who have completed an excercise 
 	//do all of the calculations on a month cohort basis
 
 Written to run within a proc sql step in SAS, slight adjustments may be needed for a MySQL environment
-
+ 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*//
 
 
