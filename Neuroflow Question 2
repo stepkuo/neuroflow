@@ -15,7 +15,7 @@ Description and Commenting of Code:
 The bottom nested query joins the 'phq9' table and 'provider' table by provider_id so that we know the organization_id and and the organization_name for each observation in the 'phq9' table.  
 
 The top query averages the phq score for each organization and creates a field that can later be used to rank the organizations. Averaging while grouping by organization_id and organization_name provides the average phq9 score per patient at each organization (assuming that patient_id and score are unique variables).
-
+ 
 The table is ordered by the average scorce in descending order and then limited to show the top 5 observations.  
 
 Possible Extensions:
